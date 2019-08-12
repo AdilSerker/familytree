@@ -150,6 +150,7 @@ export class AddPersonForm {
             }
 
             this.removeForm();
+            this.genderW.selectedGender = null;
         } catch (error) {
             dispatchEvent(new CustomEvent('error', { detail: error }));
         }

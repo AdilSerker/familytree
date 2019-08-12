@@ -24,7 +24,7 @@ export class Tree {
         this.nodes = treeData.length ? treeData.map(item => new NodeTree(item)) : [];
 
         this.intervalX = 15;
-        this.intervalY = -50;
+        this.intervalY = -70;
         this.lockPos = false;
 
         this.init();
@@ -108,10 +108,10 @@ export class Tree {
         const node = this.nodes.find(item => item.generation === FIRST_GENERATION);
 
         const width = document.body.clientWidth;
-        const shiftX = width / 2 - node.pos.x;
+        const shiftX = 2 * width / 10  - node.pos.x;
 
         const height = document.body.clientHeight;
-        const shiftY = (height / 5) * 3 - node.pos.y;
+        const shiftY = (height / 5) * 4 - node.pos.y;
 
         node.move(new Vec2(shiftX, shiftY));
 
