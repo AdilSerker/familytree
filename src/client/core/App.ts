@@ -31,6 +31,7 @@ export class App {
         // window.addEventListener("mousemove", this.mouseMove.bind(this), false);
 
         this.lastWindowCenter = new Vec2(document.body.clientWidth / 2, 0);
+        this.cursorPos = new Vec2(document.body.clientWidth/2, document.body.clientHeight/2)
         window.addEventListener("resize", this.resizeWindow.bind(this), false);
 
         window.addEventListener("wheel", this.zoomApp.bind(this), false);

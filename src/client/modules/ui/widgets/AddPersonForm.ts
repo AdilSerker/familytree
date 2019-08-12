@@ -21,6 +21,8 @@ export class AddPersonForm {
     private generation: number;
 
     private action: FromAction;
+
+    private actionAuthor: string;
     
     constructor() {
         this.radius = 20;
@@ -42,6 +44,9 @@ export class AddPersonForm {
         this.action = action;
     }
     
+    public setActionAuthor(name: string) {
+        this.actionAuthor = name;
+    }
 
     public addForm() {
         this.state = WidgetState.Opened;
@@ -100,7 +105,9 @@ export class AddPersonForm {
         this.drawInputLine(step*6.6);
         this.drawInputLine(step*10.6);
         this.drawInputLine(step*12.6);
-        this.setupFont();
+        this.setupFont(14);
+        this.drawActionInfo(step*3.6);
+        this.setupFont(22, 'italic');
         this.drawWidgetInfo('OK');
         this.genderW.draw();
     }
@@ -109,6 +116,19 @@ export class AddPersonForm {
         if(this.state === WidgetState.Closed) return;
     
         return this.pos.clone().sub(v).length() < this.radius;
+    }
+
+    private drawActionInfo(y: number) {
+        if (this.action === FromAction.NewPerson) return;
+        const context = Canvas.getInstance().getContext();
+
+        const linePos = new Vec2(document.body.clientWidth/2, y);
+
+        const title = (this.action === FromAction.AddChild ?
+            'Add Child' :
+            'Add parent'
+        ) + ' for ' + this.actionAuthor;
+        context.fillText(title, linePos.x, linePos.y, document.body.clientWidth);
     }
 
     private onClick(e: InterfaceEvent) {
@@ -154,13 +174,13 @@ export class AddPersonForm {
         context.stroke();
     }
 
-    private setupFont() {
+    private setupFont(size: number, style: string = '') {
         const context = Canvas.getInstance().getContext();
 
         context.fillStyle = ColorScheme.Black;
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.font = "italic 22px sans-serif";
+        context.font = `${style} ${size}px sans-serif`;
     }
 
     private drawWidgetInfo(title: string) {

@@ -71,6 +71,7 @@ export class PersonWidget {
                 const action = this.action === Action.AddChild ? FromAction.AddChild :
                     this.action === Action.AddParent ? FromAction.AddParent : null;
                 this.addPersonForm.setAction(action);
+                this.addPersonForm.setActionAuthor(this.node.name);
                 this.addPersonForm.addForm();
             }
 
