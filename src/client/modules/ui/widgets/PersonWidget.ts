@@ -4,7 +4,7 @@ import { TreeEvent } from "../../../components/events/TreeEvent";
 import { Canvas } from "../../../components/Canvas";
 import { TreeLockEvent } from "../../../components/events/TreeLockEvent";
 import { Vec2 } from "../../../components/Vec2";
-import { AddPersonForm, FromAction } from "./AddPersonForm";
+import { AddPersonForm, FromAction as FormAction } from "./AddPersonForm";
 
 enum Action {
     AddChild = 'Add Child',
@@ -64,17 +64,22 @@ export class PersonWidget {
 
             if (this.state === WidgetState.Drag) {
                 this.state = WidgetState.CreatePerson;
-                this.addPersonForm.setDefaults({
-                    parentId: this.node.id,
+                
+                const action = this.action === Action.AddChild ? FormAction.AddChild :
+                    this.action === Action.AddParent ? FormAction.AddParent : null;
+                this.addPersonForm.setAction(action);
+                this.addPersonForm.setActionAuthor({
+                    id: this.node.id,
+                    name: this.node.name,
                     generation: this.node.generation + 1
                 });
-                const action = this.action === Action.AddChild ? FromAction.AddChild :
-                    this.action === Action.AddParent ? FromAction.AddParent : null;
-                this.addPersonForm.setAction(action);
-                this.addPersonForm.setActionAuthor(this.node.name);
                 this.addPersonForm.addForm();
             }
 
+        }, false);
+
+        window.addEventListener('hide-widgets', () => {
+            this.state = WidgetState.Closed;
         }, false);
     }
 

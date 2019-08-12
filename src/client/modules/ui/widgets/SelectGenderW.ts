@@ -8,25 +8,42 @@ export class SelectGenderW {
 
     public enable: boolean;
 
+    private position: Vec2;
     private maleRadioPos: Vec2;
     private femaleRadioPos: Vec2;
 
     private radius: number;
 
-    constructor(y: number) {
+    constructor(pos: Vec2) {
+        const h = Canvas.h;
+        const w = Canvas.w;
+
         this.radius = 5;
-        this.maleRadioPos = new Vec2(50 + this.radius, y);
-        this.femaleRadioPos = new Vec2(document.body.clientWidth/2 + 50 + this.radius, y);
+        this.position = pos;
+        this.maleRadioPos = new Vec2(w*17 + this.radius, 0);
+        this.femaleRadioPos = new Vec2(w*65 + this.radius, 0);
         window.addEventListener('ui', this.onClick.bind(this),false);
+        
+        window.addEventListener('hide-widgets', () => {
+            this.selectedGender = null;
+        }, false);
 
     }
 
-    public draw() {
+    public updatePosition(pos: Vec2) {
+        this.position.add(pos);
+    }
+
+    public draw(v: Vec2) {
+        const position = this.position.clone().add(v);
+        
         this.setupFont();
-        this.drawCircle(this.maleRadioPos, this.selectedGender === Gender.Male);
-        this.drawWidgetInfo('Male', this.maleRadioPos);
-        this.drawCircle(this.femaleRadioPos, this.selectedGender === Gender.Female);
-        this.drawWidgetInfo('Female', this.femaleRadioPos);
+        this.drawCircle(this.maleRadioPos.clone()
+            .add(position), this.selectedGender === Gender.Male);
+        this.drawWidgetInfo('Male', this.maleRadioPos.clone().add(position));
+        this.drawCircle(this.femaleRadioPos.clone()
+            .add(position), this.selectedGender === Gender.Female);
+        this.drawWidgetInfo('Female', this.femaleRadioPos.clone().add(position));
 
     }
 
@@ -35,7 +52,7 @@ export class SelectGenderW {
         context.fillStyle = ColorScheme.Black;
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.font = "italic 16px sans-serif";
+        context.font = "italic 20px sans-serif";
     }
 
     private drawWidgetInfo(title: string, v: Vec2) {
@@ -51,7 +68,7 @@ export class SelectGenderW {
         context.lineTo(dotOutCircle.x, dotOutCircle.y);
         context.lineTo(dotOutCircle.x + widthString, dotOutCircle.y);
         context.stroke();
-        context.fillText(title, dotOutCircle.x + widthString / 2, dotOutCircle.y - this.radius*1.5, widthString);
+        context.fillText(title, dotOutCircle.x + widthString / 2, dotOutCircle.y - this.radius*2, widthString);
     }
 
     private drawCircle(v: Vec2, selected: boolean) {
@@ -77,15 +94,15 @@ export class SelectGenderW {
 
     private isMaleSelect(v: Vec2): boolean {
         return v.x < document.body.clientWidth/2
-            && v.y < this.maleRadioPos.y + this.radius * 3
-            && v.y > this.maleRadioPos.y - this.radius * 6;
+            && v.y < this.position.clone().add(this.maleRadioPos).y + this.radius * 3
+            && v.y > this.position.clone().add(this.maleRadioPos).y - this.radius * 6;
 
     }
 
     private isFemaleSelect(v: Vec2): boolean {
         return v.x > document.body.clientWidth/2
-            && v.y < this.femaleRadioPos.y + this.radius * 3
-            && v.y > this.femaleRadioPos.y - this.radius * 6;
+            && v.y < this.position.clone().add(this.femaleRadioPos).y + this.radius * 3
+            && v.y > this.position.clone().add(this.femaleRadioPos).y - this.radius * 6;
     }
 
 

@@ -9,71 +9,94 @@ import { AddParentEvent } from "../../../components/events/AddParentEvent";
 
 export enum FromAction { NewPerson, AddChild, AddParent };
 
+type Button = {
+    pos: Vec2,
+    name: string,
+    radius: number
+}
+
 export class AddPersonForm {
     private state: WidgetState;
 
     private pos: Vec2;
-    private radius: number;
-
-    private genderW: SelectGenderW;
-
-    private parentId: string;
-    private generation: number;
+    private genderWidget: SelectGenderW;
+    private okButton: Button;
 
     private action: FromAction;
 
-    private actionAuthor: string;
-    
+    private actionAuthor: {
+        id: string;
+        name: string;
+        generation: number
+    };
+
     constructor() {
-        this.radius = 20;
-        const height = document.body.clientHeight;
-        const step = height/20;
+        const h = Canvas.h;
+        const w = Canvas.w;
+        this.okButton = {
+            radius: 20,
+            name: 'Ok',
+            pos: new Vec2(w*50, h*85)
+        };
 
-        this.genderW = new SelectGenderW(step*8);
-        this.genderW.enable = false;
+        this.pos = new Vec2();
 
-        this.generation = 1;
-        this.parentId = null;
+        this.genderWidget = new SelectGenderW(new Vec2(0, h*50));
+        this.genderWidget.enable = false;
+
+        this.actionAuthor = {
+            id: null,
+            name: null,
+            generation: 1
+        }
 
         this.action = FromAction.NewPerson;
 
-        window.addEventListener('ui', this.onClick.bind(this),false);
+        window.addEventListener('ui', this.onClick.bind(this), false);
+        window.addEventListener('hide-widgets', () => {
+            this.state = WidgetState.Closed;
+            this.removeForm();
+        }, false);
+    }
+
+    public update(deltaSecond: number) {
+        this.updateInputPos();
     }
 
     public setAction(action: FromAction) {
         this.action = action;
     }
-    
-    public setActionAuthor(name: string) {
-        this.actionAuthor = name;
+
+    public setActionAuthor(author: {
+        id: string;
+        name: string;
+        generation: number
+    }) {
+        this.actionAuthor = { ...author };
     }
+
 
     public addForm() {
         this.state = WidgetState.Opened;
         if (!document.getElementById('create_person')) {
             document.body.appendChild(this.generateDivInputForm());
         }
-        this.genderW.enable = true;
+        this.genderWidget.enable = true;
 
-    }
-
-    public setDefaults(data: { parentId: string, generation: number }) {
-        this.parentId = data.parentId;
-        this.generation = data.generation;
     }
 
     public removeForm() {
         this.state = WidgetState.Closed;
         const form = document.getElementById('create_person');
-        document.body.removeChild(form);
+        form && document.body.removeChild(form);
     }
 
     public validate() {
         const nameField = <HTMLInputElement>document.getElementById('name');
-        if (!nameField.value.length || !this.genderW.selectedGender) {
+        if (!nameField.value.length || !this.genderWidget.selectedGender) {
             throw new Error('validate error');
         }
-            
+
     }
 
     public getInputValues(): NewPersonData {
@@ -83,51 +106,61 @@ export class AddPersonForm {
 
         return {
             name: nameField.value,
-            gender: this.genderW.selectedGender,
+            gender: this.genderWidget.selectedGender,
             born: pobField.value,
-            generation: this.generation,
-            parentId: this.action === FromAction.AddParent ? null : this.parentId
+            generation: this.actionAuthor.generation,
+            parentId: this.action === FromAction.AddParent ? null : this.actionAuthor.id
         };
     }
 
     public draw() {
         if (this.state !== WidgetState.Opened) return;
-        const width = document.body.clientWidth;
-        const height = document.body.clientHeight;
 
-        this.pos = new Vec2(width / 2, height / 1.2);
-
-        const step = height / 20;
-
-        this.drawRectangle(ColorScheme.White);
-        this.drawCircleWidget();
-        this.drawV();
-        this.drawInputLine(step*6.6);
-        this.drawInputLine(step*10.6);
-        this.drawInputLine(step*12.6);
+        this.drawbackPlane(ColorScheme.White);
+        this.drawOkButton();
+        this.drawInputLines();
         this.setupFont(14);
-        this.drawActionInfo(step*3.6);
-        this.setupFont(22, 'italic');
-        this.drawWidgetInfo('OK');
-        this.genderW.draw();
+        this.drawActionInfo(new Vec2(Canvas.w*50, Canvas.h*30));
+        this.genderWidget.draw(this.pos);
     }
 
     public isClicked(v: Vec2): boolean {
-        if(this.state === WidgetState.Closed) return;
-    
-        return this.pos.clone().sub(v).length() < this.radius;
+        if (this.state === WidgetState.Closed) return;
+
+        return this.pos.clone().sub(v).length() < this.okButton.radius;
     }
 
-    private drawActionInfo(y: number) {
+    private updateInputPos() {
+        const inputName = document.getElementById('name');
+        const inputDob = document.getElementById('dob');
+        const inputPob = document.getElementById('pob');
+
+        const h = Canvas.h;
+
+        const namePos = new Vec2(0, h*35).add(this.pos);
+        const dobPos = new Vec2(0, h*55).add(this.pos);
+        const pobPos = new Vec2(0, h*65).add(this.pos);
+
+        inputName.style.left = namePos.x + 'px';
+        inputName.style.top = namePos.y + 'px';
+        inputDob.style.left = dobPos.x + 'px';
+        inputDob.style.top = dobPos.y + 'px';
+        inputPob.style.left = pobPos.x + 'px';
+        inputPob.style.top = pobPos.y + 'px';
+    }
+
+    private drawActionInfo(v: Vec2) {
         if (this.action === FromAction.NewPerson) return;
         const context = Canvas.getInstance().getContext();
 
-        const linePos = new Vec2(document.body.clientWidth/2, y);
+        const linePos = v.add(this.pos);
 
         const title = (this.action === FromAction.AddChild ?
             'Add Child' :
             'Add parent'
-        ) + ' for ' + this.actionAuthor;
+        ) + ' for ' + this.actionAuthor.name;
+
+
         context.fillText(title, linePos.x, linePos.y, document.body.clientWidth);
     }
 
@@ -150,29 +183,39 @@ export class AddPersonForm {
             }
 
             this.removeForm();
-            this.genderW.selectedGender = null;
+            this.genderWidget.selectedGender = null;
         } catch (error) {
             dispatchEvent(new CustomEvent('error', { detail: error }));
         }
     }
 
-    private drawRectangle(color: ColorScheme) {
+    private drawbackPlane(color: ColorScheme) {
         const context = Canvas.getInstance().getContext();
 
         context.fillStyle = color;
-        context.fillRect(0, 0, document.body.clientWidth, document.body.clientHeight);
+
+        context.fillRect(this.pos.x, this.pos.y, Canvas.w*100, Canvas.h*100);
     }
 
-    private drawInputLine(y: number) {
+    private drawInputLines() {
         const context = Canvas.getInstance().getContext();
+        const w = Canvas.w;
 
-        const widthLine = document.body.clientWidth - 40;
-        const linePos = new Vec2(20, y);
+        const inputs = document.body.getElementsByTagName('input');
+        for (let i = 0; i < inputs.length; ++i) {
+            const x = Number(inputs[i].style.left.split('px')[0]);
+            const y = Number(inputs[i].style.top.split('px')[0]);
+            const heightInput = inputs[i].clientHeight;
 
-        context.beginPath();
-        context.moveTo(linePos.x, linePos.y);
-        context.lineTo(linePos.x + widthLine, linePos.y);
-        context.stroke();
+            const widthLine = w*80;
+            const linePos = new Vec2(x+w*10, y + heightInput);
+    
+            context.fillStyle = ColorScheme.Black;
+            context.beginPath();
+            context.moveTo(linePos.x, linePos.y);
+            context.lineTo(linePos.x + widthLine, linePos.y);
+            context.stroke();
+        }
     }
 
     private setupFont(size: number, style: string = '') {
@@ -189,47 +232,48 @@ export class AddPersonForm {
 
         const widthString = context.measureText(title).width;
         context.beginPath();
-        const turnedVec = new Vec2(this.radius - 2, 0).rotateAround(new Vec2(), Math.PI / 4);
-        const dotOnCircle = turnedVec.clone().add(this.pos);
+        const turnedVec = new Vec2(this.okButton.radius - 2, 0).rotateAround(new Vec2(), Math.PI / 4);
+        const dotOnCircle = turnedVec.clone().add(this.pos.clone().add(this.okButton.pos));
         context.moveTo(dotOnCircle.x, dotOnCircle.y);
         const turnedVecScaled = turnedVec.clone().multiplyScalar(2);
-        const dotOutCircle = turnedVecScaled.clone().add(this.pos);
+        const dotOutCircle = turnedVecScaled.clone().add(this.pos.clone().add(this.okButton.pos));
         context.lineTo(dotOutCircle.x, dotOutCircle.y);
         context.lineTo(dotOutCircle.x + widthString, dotOutCircle.y);
         context.stroke();
-        context.fillText(title, dotOutCircle.x + widthString / 2, dotOutCircle.y - this.radius / 1.7, widthString);
+        context.fillText(title, dotOutCircle.x + widthString / 2, dotOutCircle.y - this.okButton.radius / 1.7, widthString);
     }
 
-    private drawCircleWidget() {
+    private drawOkButton() {
         const context = Canvas.getInstance().getContext();
+
+        const pos = this.pos.clone().add(this.okButton.pos);
 
         context.fillStyle = ColorScheme.WhiteOpacity;
         context.beginPath();
-        context.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI);
+        context.arc(pos.x, pos.y, this.okButton.radius, 0, 2 * Math.PI);
         context.fill();
 
         context.fillStyle = ColorScheme.Black;
         context.beginPath();
-        context.arc(this.pos.x, this.pos.y, this.radius - 2, 0, 2 * Math.PI);
+        context.arc(pos.x, pos.y, this.okButton.radius - 2, 0, 2 * Math.PI);
         context.stroke();
-    }
 
-    private drawV() {
-        const context = Canvas.getInstance().getContext();
-
-        const vPos = this.pos.clone().add(new Vec2(-4, 8));
+        const vPos = pos.clone().add(new Vec2(-4, 8));
         context.beginPath();
         const turnedVec = new Vec2(1, 0).rotateAround(new Vec2(), -3 * Math.PI / 4);
         const vecInCircle = turnedVec.clone()
-            .multiplyScalar(this.radius / 2)
+            .multiplyScalar(this.okButton.radius / 2)
             .add(vPos);
         context.moveTo(vPos.x, vPos.y);
         context.lineTo(vecInCircle.x, vecInCircle.y);
         const vecOnCircle = turnedVec.rotateAround(new Vec2(), Math.PI / 2)
-            .multiplyScalar(this.radius).add(vPos);
+            .multiplyScalar(this.okButton.radius).add(vPos);
         context.moveTo(vPos.x, vPos.y);
         context.lineTo(vecOnCircle.x, vecOnCircle.y);
         context.stroke();
+
+        this.setupFont(22, 'italic');
+        this.drawWidgetInfo('OK');
     }
 
     private generateDivInputForm() {
@@ -241,10 +285,10 @@ export class AddPersonForm {
         form.style.height = '100%';
         form.id = 'create_person';
 
-        const step = document.body.clientHeight / 20;
-        form.appendChild(this.generateInputText('name', 'Name', new Vec2(0, step * 5)));
-        form.appendChild(this.generateInputText('dob', 'Date of Birth', new Vec2(0, step * 9)));
-        form.appendChild(this.generateInputText('pob', 'Place of Birth', new Vec2(0, step * 11)));
+        const h = Canvas.h;
+        form.appendChild(this.generateInputText('name', 'Name', new Vec2(0, h*35).add(this.pos)));
+        form.appendChild(this.generateInputText('dob', 'Date of Birth', new Vec2(0, h*55).add(this.pos)));
+        form.appendChild(this.generateInputText('pob', 'Place of Birth', new Vec2(0, h*65).add(this.pos)));
 
         return form;
     }
@@ -266,6 +310,9 @@ export class AddPersonForm {
         inputText.style.textAlign = 'center';
         inputText.style.backgroundColor = 'rgba(255, 255, 255, 0)';
         inputText.style.borderColor = 'rgba(255, 255, 255, 0)';
+
+        inputText.style.outline = '0';
+        inputText.style.outlineOffset = '0';
 
         return inputText;
     }

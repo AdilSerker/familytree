@@ -1,6 +1,7 @@
 import { ColorScheme } from "../../types/TreeTypes";
 import { Vec2 } from "../../components/Vec2";
 import { Canvas } from "../../components/Canvas";
+import { InterfaceEvent } from "../../components/events/UIEvent";
 
 export class Header {
     private title = 'Serkerov';
@@ -8,7 +9,9 @@ export class Header {
     private height: number;
 
     public constructor() {
-        this.height = document.body.clientHeight/6;
+        this.height = Canvas.h*23;
+
+        addEventListener('ui', this.onClick.bind(this), false);
     }
 
     public draw(): void {
@@ -27,14 +30,15 @@ export class Header {
     public drawTitle() {
         const context = Canvas.getInstance().getContext();
 
+        
         context.fillStyle = ColorScheme.Black;
         context.textAlign = "center";
         context.textBaseline = "middle"
-        context.font = "35px sans-serif";
-        const width = document.body.clientWidth;
-        context.fillText(this.title, width/2, document.body.clientHeight/13, width);
-
+        context.font = "60px sans-serif";
+        context.fillText(this.title, Canvas.w*50, Canvas.h*10, Canvas.w*100);
+        
         const widthString = context.measureText(this.title).width;
+        
         this.drawSubTitle(widthString);
 
     }
@@ -43,12 +47,11 @@ export class Header {
         const context = Canvas.getInstance().getContext();
 
         context.fillStyle = ColorScheme.Black;
-        context.textAlign = "start";
+        context.textAlign = "left";
         context.textBaseline = "middle"
-        context.font = "italic 16px sans-serif";
-        const width = document.body.clientWidth;
-        const height = document.body.clientHeight;
-        context.fillText(this.subTitle, width/2, height/9, widthString);
+        context.font = "italic 20px sans-serif";
+
+        context.fillText(this.subTitle, Canvas.w*53, Canvas.h*15, widthString);
 
     }
 
@@ -58,5 +61,11 @@ export class Header {
 
     public isClicked(v: Vec2): boolean {
         return v.y < this.height;
+    }
+
+    private onClick(e: InterfaceEvent) {
+        if(!this.isClicked(e.detail)) return;
+
+        dispatchEvent(new Event('hide-widgets'));
     }
 }

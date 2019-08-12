@@ -27,6 +27,14 @@ export class Canvas {
         return Canvas.instance;
     }
 
+    public static get h() {
+        return document.body.clientHeight/100;
+    }
+
+    public static get w() {
+        return document.body.clientWidth/100;
+    }
+
     public clear() {
         this.context.clearRect(0, 0, document.body.clientWidth, document.body.clientHeight);
         this.context.fillStyle = "rgba(255, 255, 255, 1)";
