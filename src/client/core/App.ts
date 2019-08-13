@@ -39,6 +39,8 @@ export class App {
         window.addEventListener("touchstart", (e: TouchEvent) => {
             const touchPos = e.touches.item(0);
 
+            dispatchEvent(new CustomEvent('console', { detail: `count touches ${e.touches.length}` }));
+
             this.cursorPos = new Vec2(touchPos.clientX, touchPos.clientY);
             this.isDragState = !this.ui.isClicked(this.cursorPos);
             this.lastCursorPos = this.cursorPos;
