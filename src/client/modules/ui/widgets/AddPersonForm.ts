@@ -299,7 +299,8 @@ export class AddPersonForm {
 
         const h = Canvas.h;
         form.appendChild(this.generateInputText('name', 'Name', new Vec2(0, h*35).add(this.pos)));
-        form.appendChild(this.generateInputText('family', 'Family', new Vec2(0, h*45).add(this.pos)));
+        this.action === FromAction.AddRelationship &&
+            form.appendChild(this.generateInputText('family', 'Family', new Vec2(0, h*45).add(this.pos)));
         form.appendChild(this.generateInputText('dob', 'Date of Birth', new Vec2(0, h*55).add(this.pos)));
         form.appendChild(this.generateInputText('pob', 'Place of Birth', new Vec2(0, h*65).add(this.pos)));
 
@@ -323,6 +324,8 @@ export class AddPersonForm {
         inputText.style.textAlign = 'center';
         inputText.style.backgroundColor = 'rgba(255, 255, 255, 0)';
         inputText.style.borderColor = 'rgba(255, 255, 255, 0)';
+
+        inputText.autocomplete = 'off';
 
         inputText.style.outline = '0';
         inputText.style.outlineOffset = '0';
