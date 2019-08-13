@@ -4,6 +4,7 @@ import { Vec2 } from "../../components/Vec2";
 import { TreeEvent } from "../../components/events/TreeEvent";
 import { InterfaceEvent } from "../../components/events/UIEvent";
 import { TreeLockEvent } from "../../components/events/TreeLockEvent";
+import { Canvas } from "../../components/Canvas";
 
 export type GroupedNodes = {
     [key: string]: NodeTree[]
@@ -107,11 +108,8 @@ export class Tree {
         if (!this.nodes.length) return;
         const node = this.nodes.find(item => item.generation === FIRST_GENERATION);
 
-        const width = document.body.clientWidth;
-        const shiftX = 2 * width / 10  - node.pos.x;
-
-        const height = document.body.clientHeight;
-        const shiftY = (height / 5) * 4 - node.pos.y;
+        const shiftX = Canvas.w*40  - node.pos.x;
+        const shiftY = Canvas.h * 75 - node.pos.y;
 
         node.move(new Vec2(shiftX, shiftY));
 

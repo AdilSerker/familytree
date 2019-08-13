@@ -8,7 +8,8 @@ import { AddPersonForm, FromAction as FormAction } from "./AddPersonForm";
 
 enum Action {
     AddChild = 'Add Child',
-    AddParent = 'Add Parent'
+    AddParent = 'Add Parent',
+    AddRelationship = 'Add Relationship'
 }
 
 export class PersonWidget {
@@ -49,14 +50,11 @@ export class PersonWidget {
             if (this.state === WidgetState.Closed) return;
 
             const touchPos = e.touches.item(0);
-
-            this.action = this.node.pos.clone().sub(this.cursorPos).y > 0 ?
-                Action.AddChild :
-                Action.AddParent;
-
-            this.action = this.node.parentId ? Action.AddChild : this.action;
-
             this.cursorPos = new Vec2(touchPos.clientX, touchPos.clientY);
+
+            this.action = this.getAction();
+
+            
         }, false);
 
         window.addEventListener("touchend", (e: TouchEvent) => {
@@ -66,12 +64,13 @@ export class PersonWidget {
                 this.state = WidgetState.CreatePerson;
                 
                 const action = this.action === Action.AddChild ? FormAction.AddChild :
-                    this.action === Action.AddParent ? FormAction.AddParent : null;
+                    this.action === Action.AddParent ? FormAction.AddParent : FormAction.AddRelationship;
                 this.addPersonForm.setAction(action);
                 this.addPersonForm.setActionAuthor({
                     id: this.node.id,
                     name: this.node.name,
-                    generation: this.node.generation + 1
+                    generation: this.node.generation + 1,
+                    gender: this.node.gender
                 });
                 this.addPersonForm.addForm();
             }
@@ -81,6 +80,30 @@ export class PersonWidget {
         window.addEventListener('hide-widgets', () => {
             this.state = WidgetState.Closed;
         }, false);
+    }
+
+    private getAction() {
+        const angle = this.node.pos.clone().sub(this.cursorPos).negate().angle();
+
+        let choiseCount = 1;
+
+        if (!this.node.parentId && !this.node.relationship) {
+            choiseCount = 3;
+        }
+
+        if ((!this.node.parentId && this.node.relationship) || (this.node.parentId && !this.node.relationship)) {
+            choiseCount = 2;
+        }
+
+        switch(choiseCount) {
+            case 1: return Action.AddChild;
+            case 2: return angle < 2*Math.PI && angle > Math.PI ? Action.AddChild :
+                !this.node.parentId ? Action.AddParent : Action.AddRelationship;
+            case 3: return angle < 5 * Math.PI/3 && angle > Math.PI ? Action.AddChild :
+                angle < Math.PI && angle > Math.PI/3 ? Action.AddParent : Action.AddRelationship;
+        }
+
+
     }
 
     public setInvisible() {

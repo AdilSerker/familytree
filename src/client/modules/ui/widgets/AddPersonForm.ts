@@ -1,13 +1,14 @@
 import { Vec2 } from "../../../components/Vec2";
 import { Canvas } from "../../../components/Canvas";
-import { ColorScheme, NewPersonData, WidgetState } from "../../../types/TreeTypes";
+import { ColorScheme, NewPersonData, WidgetState, Gender } from "../../../types/TreeTypes";
 import { SelectGenderW } from "./SelectGenderW";
 import { InterfaceEvent } from "../../../components/events/UIEvent";
 import { NewPersonEvent } from "../../../components/events/NewPersonEvent";
 import { AddChildEvent } from "../../../components/events/AddChildEvent";
 import { AddParentEvent } from "../../../components/events/AddParentEvent";
+import { AddRelationshipEvent } from "../../../components/events/AddRelationshipEvent";
 
-export enum FromAction { NewPerson, AddChild, AddParent };
+export enum FromAction { NewPerson, AddChild, AddParent, AddRelationship };
 
 type Button = {
     pos: Vec2,
@@ -27,7 +28,8 @@ export class AddPersonForm {
     private actionAuthor: {
         id: string;
         name: string;
-        generation: number
+        generation: number;
+        gender: Gender
     };
 
     constructor() {
@@ -47,7 +49,8 @@ export class AddPersonForm {
         this.actionAuthor = {
             id: null,
             name: null,
-            generation: 1
+            generation: 1,
+            gender: null
         }
 
         this.action = FromAction.NewPerson;
@@ -70,7 +73,8 @@ export class AddPersonForm {
     public setActionAuthor(author: {
         id: string;
         name: string;
-        generation: number
+        generation: number,
+        gender: Gender
     }) {
         this.actionAuthor = { ...author };
     }
@@ -81,7 +85,7 @@ export class AddPersonForm {
         if (!document.getElementById('create_person')) {
             document.body.appendChild(this.generateDivInputForm());
         }
-        this.genderWidget.enable = true;
+        this.genderWidget.enable = this.action === FromAction.AddRelationship ? false : true;
 
     }
 
@@ -127,19 +131,21 @@ export class AddPersonForm {
     public isClicked(v: Vec2): boolean {
         if (this.state === WidgetState.Closed) return;
 
-        return this.pos.clone().sub(v).length() < this.okButton.radius;
+        return this.pos.clone().add(this.okButton.pos).sub(v).length() < this.okButton.radius;
     }
 
     private updateInputPos() {
         const inputName = document.getElementById('name');
         const inputDob = document.getElementById('dob');
         const inputPob = document.getElementById('pob');
+        const inputFamily = document.getElementById('family');
 
         const h = Canvas.h;
 
         const namePos = new Vec2(0, h*35).add(this.pos);
         const dobPos = new Vec2(0, h*55).add(this.pos);
         const pobPos = new Vec2(0, h*65).add(this.pos);
+        const famPos = new Vec2(0, h*45).add(this.pos);
 
         inputName.style.left = namePos.x + 'px';
         inputName.style.top = namePos.y + 'px';
@@ -147,6 +153,8 @@ export class AddPersonForm {
         inputDob.style.top = dobPos.y + 'px';
         inputPob.style.left = pobPos.x + 'px';
         inputPob.style.top = pobPos.y + 'px';
+        inputFamily.style.left = famPos.x + 'px';
+        inputFamily.style.top = famPos.y + 'px';
     }
 
     private drawActionInfo(v: Vec2) {
@@ -157,9 +165,10 @@ export class AddPersonForm {
 
         const title = (this.action === FromAction.AddChild ?
             'Add Child' :
-            'Add parent'
+            this.action === FromAction.AddParent ?
+                'Add Parent' :
+                'Add Relationship'
         ) + ' for ' + this.actionAuthor.name;
-
 
         context.fillText(title, linePos.x, linePos.y, document.body.clientWidth);
     }
@@ -180,6 +189,9 @@ export class AddPersonForm {
             }
             if (this.action === FromAction.AddParent) {
                 dispatchEvent(new AddParentEvent(inputValues));
+            }
+            if (this.action === FromAction.AddRelationship) {
+                dispatchEvent(new AddRelationshipEvent(inputValues));
             }
 
             this.removeForm();
@@ -287,6 +299,7 @@ export class AddPersonForm {
 
         const h = Canvas.h;
         form.appendChild(this.generateInputText('name', 'Name', new Vec2(0, h*35).add(this.pos)));
+        form.appendChild(this.generateInputText('family', 'Family', new Vec2(0, h*45).add(this.pos)));
         form.appendChild(this.generateInputText('dob', 'Date of Birth', new Vec2(0, h*55).add(this.pos)));
         form.appendChild(this.generateInputText('pob', 'Place of Birth', new Vec2(0, h*65).add(this.pos)));
 

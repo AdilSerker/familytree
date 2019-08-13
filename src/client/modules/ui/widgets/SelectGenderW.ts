@@ -35,6 +35,7 @@ export class SelectGenderW {
     }
 
     public draw(v: Vec2) {
+        if (!this.enable) return;
         const position = this.position.clone().add(v);
         
         this.setupFont();

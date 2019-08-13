@@ -126,4 +126,12 @@ export class Vec2 implements IVec2 {
 
 		return this;
 	}
+
+	public angle() {
+		var angle = Math.atan2(this.y, this.x);
+
+		if (angle < 0) angle += 2 * Math.PI;
+
+		return angle;
+	}
 }
