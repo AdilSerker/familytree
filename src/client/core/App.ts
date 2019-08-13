@@ -37,7 +37,10 @@ export class App {
         window.addEventListener("wheel", this.zoomApp.bind(this), false);
 
         window.addEventListener("touchstart", (e: TouchEvent) => {
+            
             const touchPos = e.touches.item(0);
+
+
 
             dispatchEvent(new CustomEvent('console', { detail: `count touches ${e.touches.length}` }));
 
@@ -47,11 +50,16 @@ export class App {
         }, false);
 
         window.addEventListener("touchmove", (e: TouchEvent) => {
-            const touchPos = e.touches.item(0);
+            const touch1 = e.touches.item(0);
+            const touch2 = e.touches.item(1);
+            if (e.touches.length > 1) {
+                this.zoomTouch(new Vec2(touch1.clientX, touch1.clientY), new Vec2(touch2.clientX, touch2.clientY));
+            }
+            
             this.lastCursorPos = this.cursorPos;
 
-            this.cursorPos = new Vec2(touchPos.clientX, touchPos.clientY);
-            if (this.isDragState) {
+            this.cursorPos = new Vec2(touch1.clientX, touch1.clientY);
+            if (this.isDragState && e.touches.length === 1) {
                 this.moveTree(this.cursorPos);
             }
 
@@ -98,6 +106,12 @@ export class App {
     private zoomApp(e: WheelEvent) {
         this.tree.zoom(this.cursorPos, 0.01, e.deltaY > 0);
     }
+
+    private zoomTouch(touch1: Vec2, touch2: Vec2) {
+        this.tree.zoomTouch(touch1, touch2);
+    }
+
+    
 
     private mouseUp(e: MouseEvent) {
         this.isDragState = false;

@@ -13,6 +13,7 @@ export type GroupedNodes = {
 const FIRST_GENERATION = 1;
 
 export class Tree {
+    
     public lockPos: boolean;
 
     private nodes: NodeTree[];
@@ -20,6 +21,7 @@ export class Tree {
     private intervalX: number;
     private intervalY: number;
 
+    private zoomCount: number;
 
     public constructor(treeData: NodeParams[]) {
         this.nodes = treeData.length ? treeData.map(item => new NodeTree(item)) : [];
@@ -49,14 +51,17 @@ export class Tree {
         return this.getFirstGenerationNode().pos;
     }
 
-    public draw(context: CanvasRenderingContext2D) {
-        this.drawConnection(context, this.getFirstGenerationNode());
-        this.nodes.forEach(item => item.draw(context));
-    }
+    public zoomTouch(touch1: Vec2, touch2: Vec2) {
+        if (!this.nodes.length) return;
+        const centerDot = touch2.clone().sub(touch1).divideScalar(2);
 
-    public move(v: Vec2) {
-        if (!this.nodes.length || this.lockPos) return;
-        this.getFirstGenerationNode().move(v);
+        const delta = touch2.clone().sub(centerDot).length() - this.zoomCount;
+
+        this.nodes.forEach(item => {
+            const vec = item.pos.clone().sub(centerDot);
+            item.pos.addScaledVector(vec.normalize(), delta);
+        });
+
     }
 
     public zoom(mousePos: Vec2, scale: number, isNegate: boolean) {
@@ -74,6 +79,17 @@ export class Tree {
         }
     }
 
+    public draw(context: CanvasRenderingContext2D) {
+        this.drawConnection(context, this.getFirstGenerationNode());
+        this.nodes.forEach(item => item.draw(context));
+    }
+
+    public move(v: Vec2) {
+        if (!this.nodes.length || this.lockPos) return;
+        this.getFirstGenerationNode().move(v);
+    }
+
+   
     private getFirstGenerationNode(): NodeTree {
         return this.nodes.find(item => item.generation === FIRST_GENERATION);
     }
