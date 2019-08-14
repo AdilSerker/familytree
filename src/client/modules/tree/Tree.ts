@@ -55,12 +55,16 @@ export class Tree {
         if (!this.nodes.length) return;
         const centerDot = touch2.clone().sub(touch1).divideScalar(2);
 
+        if (!this.zoomCount) { this.zoomCount = touch2.clone().sub(centerDot).length(); }
+
         const delta = touch2.clone().sub(centerDot).length() - this.zoomCount;
 
         this.nodes.forEach(item => {
             const vec = item.pos.clone().sub(centerDot);
             item.pos.addScaledVector(vec.normalize(), delta);
         });
+
+        this.zoomCount = touch2.clone().sub(centerDot).length();
 
     }
 
