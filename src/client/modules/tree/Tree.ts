@@ -63,7 +63,7 @@ export class Tree {
 
         const delta = touch2.clone().sub(centerDot).length() - this.zoomCount;
         debug(delta + '');
-        if (Math.abs(delta) < 0.5) { 
+        if (Math.abs(delta) < 0.1) { 
             this.zoomCount = touch2.clone().sub(centerDot).length();
             return; 
         }
