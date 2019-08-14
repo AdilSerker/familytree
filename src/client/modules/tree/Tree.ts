@@ -63,7 +63,11 @@ export class Tree {
 
         const delta = touch2.clone().sub(centerDot).length() - this.zoomCount;
         debug(delta + '');
-        if (delta < 0) {
+        if (Math.abs(delta) < 0.5) { 
+            this.zoomCount = touch2.clone().sub(centerDot).length();
+            return; 
+        }
+        if (delta > 0) {
             this.nodes.forEach(item => {
                 const vec = centerDot.clone().sub(item.pos);
                 item.pos.addScaledVector(vec, 0.01);
