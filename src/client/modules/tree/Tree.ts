@@ -62,11 +62,18 @@ export class Tree {
         if (!this.zoomCount) { this.zoomCount = touch2.clone().sub(centerDot).length(); }
 
         const delta = touch2.clone().sub(centerDot).length() - this.zoomCount;
-        debug(delta + '');
-        this.nodes.forEach(item => {
-            const vec = item.pos.clone().sub(centerDot);
-            item.pos.addScaledVector(vec.normalize(), delta);
-        });
+
+        if (delta < 0) {
+            this.nodes.forEach(item => {
+                const vec = centerDot.clone().sub(item.pos);
+                item.pos.addScaledVector(vec, 0.01);
+            });
+        } else {
+            this.nodes.forEach(item => {
+                const vec = item.pos.clone().sub(centerDot);
+                item.pos.addScaledVector(vec, 0.01);
+            });
+        }
 
         this.zoomCount = touch2.clone().sub(centerDot).length();
 

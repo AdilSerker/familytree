@@ -40,10 +40,9 @@ export class Footer {
         context.fillStyle = ColorScheme.White;
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.font = "10px sans-serif";
+        context.font = "20px sans-serif";
 
         const textPos = new Vec2(Canvas.w*50, this.height/2).add(this.pos);
         context.fillText(this.message, textPos.x, textPos.y, Canvas.w*85);
-        console.log('footer');
     }
 }
