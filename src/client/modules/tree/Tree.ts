@@ -10,6 +10,10 @@ export type GroupedNodes = {
     [key: string]: NodeTree[]
 }
 
+function debug(text: string) {
+    dispatchEvent(new CustomEvent('console', { detail: text }));
+}
+
 const FIRST_GENERATION = 1;
 
 export class Tree {
@@ -58,7 +62,7 @@ export class Tree {
         if (!this.zoomCount) { this.zoomCount = touch2.clone().sub(centerDot).length(); }
 
         const delta = touch2.clone().sub(centerDot).length() - this.zoomCount;
-
+        debug(delta + '');
         this.nodes.forEach(item => {
             const vec = item.pos.clone().sub(centerDot);
             item.pos.addScaledVector(vec.normalize(), delta);
