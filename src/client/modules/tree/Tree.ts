@@ -62,7 +62,7 @@ export class Tree {
         if (!this.zoomCount) { this.zoomCount = touch2.clone().sub(centerDot).length(); }
 
         const delta = touch2.clone().sub(centerDot).length() - this.zoomCount;
-
+        debug(delta + '');
         if (delta < 0) {
             this.nodes.forEach(item => {
                 const vec = centerDot.clone().sub(item.pos);
