@@ -30,7 +30,7 @@ export class Tree {
     public constructor(treeData: NodeParams[]) {
         this.nodes = treeData.length ? treeData.map(item => new NodeTree(item)) : [];
 
-        this.intervalX = 5;
+        this.intervalX = 20;
         this.intervalY = -40;
         this.lockPos = false;
 
