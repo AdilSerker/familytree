@@ -34,7 +34,7 @@ export class App {
         this.cursorPos = new Vec2(document.body.clientWidth/2, document.body.clientHeight/2)
         window.addEventListener("resize", this.resizeWindow.bind(this), false);
 
-        window.addEventListener("wheel", this.zoomApp.bind(this), false);
+        // window.addEventListener("wheel", this.zoomApp.bind(this), false);
 
         window.addEventListener("touchstart", (e: TouchEvent) => {
             
