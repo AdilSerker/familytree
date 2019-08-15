@@ -19,7 +19,7 @@
     "start": "node ./dist/server/app",
     "start-dev": "nodemon ./dist/server/app",
     "compile": "./node_modules/.bin/tsc",
-    "build": "yarn compile && yarn bundle",
+    "build": "yarn compile && yarn migrate && yarn bundle",
     "build-dev": "./node_modules/.bin/tsc --watch",
     "migrate": "node ./dist/server/components/db-connector/dbConfig > ormconfig.json && node ./node_modules/typeorm/cli migration:run",
     "migrate-undo": "node ./dist/server/components/db-connector/dbConfig > ormconfig.json && node ./node_modules/typeorm/cli migration:revert",

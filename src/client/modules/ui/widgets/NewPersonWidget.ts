@@ -2,7 +2,7 @@ import { Vec2 } from "../../../components/Vec2";
 import { ColorScheme, WidgetState } from "../../../types/TreeTypes";
 import { Canvas } from "../../../components/Canvas";
 import { InterfaceEvent } from "../../../components/events/UIEvent";
-import { AddPersonForm } from "./AddPersonForm";
+import { AddPersonForm } from "../form/AddPersonForm";
 
 export class NewPersonWidget {
     private state: WidgetState;

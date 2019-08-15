@@ -83,7 +83,7 @@ export class NodeTree {
     }
 
     public isClickable(v: Vec2): boolean {
-        return this.pos.clone().sub(v).length() < this.radius;
+        return this.pos.clone().sub(v).length() < this.radius*2;
     }
 
     private onClick(e: InterfaceEvent) {

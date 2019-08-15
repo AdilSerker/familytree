@@ -4,7 +4,7 @@ import { TreeEvent } from "../../../components/events/TreeEvent";
 import { Canvas } from "../../../components/Canvas";
 import { TreeLockEvent } from "../../../components/events/TreeLockEvent";
 import { Vec2 } from "../../../components/Vec2";
-import { AddPersonForm, FromAction as FormAction } from "./AddPersonForm";
+import { AddPersonForm, FromAction as FormAction } from "../form/AddPersonForm";
 
 enum Action {
     AddChild = 'Add Child',
