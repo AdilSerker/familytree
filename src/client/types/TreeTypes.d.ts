@@ -39,6 +39,8 @@ export type NewPersonData = {
     name: string,
     gender: Gender,
     generation: number,
+    relationship?: string,
+    familyName?: string,
     born?: string;
     age?: string;
     parentId?: string;
@@ -52,6 +54,17 @@ export type PersonForm = {
     born?: string;
     age?: string;
     parentId?: string;
+}
+
+export interface PersonData {
+    id: string;
+    name: string;
+    born: string;
+    generation: number;
+    gender: string;
+    family: string;
+    parentId: string;
+    relationship: string;
 }
 
 

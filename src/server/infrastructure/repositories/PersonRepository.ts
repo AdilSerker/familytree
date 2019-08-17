@@ -5,7 +5,7 @@ import { Person } from "../../domain/Person";
 import { PersonFactory } from "../factories/PersonFactory";
 
 export type PersonQuery = {
-    id?: string;
+    ids?: string[];
     family?: string;
     parentId?: string;
 }

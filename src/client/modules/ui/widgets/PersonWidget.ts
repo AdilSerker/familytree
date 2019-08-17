@@ -1,3 +1,4 @@
+import { Store } from './../../../components/Store';
 import { ColorScheme, WidgetState } from "../../../types/TreeTypes";
 import { NodeTree } from "../../tree/NodeTree";
 import { TreeEvent } from "../../../components/events/TreeEvent";
@@ -32,37 +33,33 @@ export class PersonWidget {
 
         this.addPersonForm = new AddPersonForm();
 
+        this.initHandlers();
+    }
+
+    private initHandlers() {
         window.addEventListener("selecttree", this.onClick.bind(this));
-
         window.addEventListener("touchstart", (e: TouchEvent) => {
-            if (this.state === WidgetState.Closed) return;
-
+            if (this.state === WidgetState.Closed)
+                return;
             const touchPos = e.touches.item(0);
             this.cursorPos = new Vec2(touchPos.clientX, touchPos.clientY);
-
             if (this.state !== WidgetState.CreatePerson) {
+                this.isClicable(this.cursorPos) && window.dispatchEvent(new TreeLockEvent(true));
                 this.state = this.isClicable(this.cursorPos) ? WidgetState.Drag : WidgetState.Opened;
             }
-
         }, false);
-
         window.addEventListener("touchmove", (e: TouchEvent) => {
-            if (this.state === WidgetState.Closed) return;
-
+            if (this.state === WidgetState.Closed)
+                return;
             const touchPos = e.touches.item(0);
             this.cursorPos = new Vec2(touchPos.clientX, touchPos.clientY);
-
             this.action = this.getAction();
-
-            
         }, false);
-
         window.addEventListener("touchend", (e: TouchEvent) => {
-            if (this.state === WidgetState.Closed) return;
-
+            if (this.state === WidgetState.Closed)
+                return;
             if (this.state === WidgetState.Drag) {
                 this.state = WidgetState.CreatePerson;
-                
                 const action = this.action === Action.AddChild ? FormAction.AddChild :
                     this.action === Action.AddParent ? FormAction.AddParent : FormAction.AddRelationship;
                 this.addPersonForm.setAction(action);
@@ -74,9 +71,8 @@ export class PersonWidget {
                 });
                 this.addPersonForm.addForm();
             }
-
+            this.action = null;
         }, false);
-
         window.addEventListener('hide-widgets', () => {
             this.state = WidgetState.Closed;
         }, false);
@@ -85,25 +81,17 @@ export class PersonWidget {
     private getAction() {
         const angle = this.node.pos.clone().sub(this.cursorPos).negate().angle();
 
-        let choiseCount = 1;
-
-        if (!this.node.parentId && !this.node.relationship) {
-            choiseCount = 3;
+        let action: Action = Action.AddChild;
+        if (!this.node.parentId) {
+            action = angle < Math.PI && angle > 0 ? Action.AddParent : action;
         }
 
-        if ((!this.node.parentId && this.node.relationship) || (this.node.parentId && !this.node.relationship)) {
-            choiseCount = 2;
+        if (!this.node.relationship) {
+            action = angle < 2*Math.PI && angle > Math.PI ? Action.AddRelationship :
+                this.node.parentId ? Action.AddRelationship : action;
         }
 
-        switch(choiseCount) {
-            case 1: return Action.AddChild;
-            case 2: return angle < 2*Math.PI && angle > Math.PI ? Action.AddChild :
-                !this.node.parentId ? Action.AddParent : Action.AddRelationship;
-            case 3: return angle < 5 * Math.PI/3 && angle > Math.PI ? Action.AddChild :
-                angle < Math.PI && angle > Math.PI/3 ? Action.AddParent : Action.AddRelationship;
-        }
-
-
+        return action;
     }
 
     public setInvisible() {
@@ -113,22 +101,42 @@ export class PersonWidget {
     public draw() {
         if (!this.node) return;
 
-        if (this.state === WidgetState.Opened) {
-            this.drawRectangle(ColorScheme.WhiteOpacity);
-            this.drawNodePoint(ColorScheme.Black);
-            this.drawNodeInfo();
-        }
-
-        if (this.state === WidgetState.Drag) {
-            this.drawRectangle(ColorScheme.WhiteOpacity);
-            this.drawNodePoint(ColorScheme.Black);
-            this.drawNodeInfo();
-            this.nodeCreatorDraw();
-        }
         if (this.state === WidgetState.CreatePerson) {
             this.addPersonForm.draw();
-
+            return;
         }
+        this.drawRectangle(ColorScheme.WhiteOpacity);
+        this.node.relationship && this.drawRelationship();
+        this.drawNodePoint(ColorScheme.Black);
+        this.drawNodeInfo();
+
+        if (this.state === WidgetState.Drag) {
+            this.nodeCreatorDraw();
+        }
+        
+    }
+
+    public drawRelationship() {
+        const context = Canvas.getInstance().getContext();
+
+        const relationName = Store.getInstance().get(this.node.relationship).name;
+        this.setTextOption(22, 'italic');
+        const widthName = context.measureText(relationName).width;
+        const pos = this.node.pos;
+        const { isRight, turnedVec, mirroredVec } = this.breakLineDraw(pos, widthName, this.radius * 5, 1);
+
+        const infoPosX = isRight ? turnedVec.x + widthName / 2 : mirroredVec.x - widthName / 2;
+        this.setTextOption(20, 'italic');
+        context.fillText(relationName, infoPosX, turnedVec.y + this.radius * 1.2);
+
+        context.fillStyle = ColorScheme.White;
+        context.beginPath();
+        context.arc(this.node.pos.x, this.node.pos.y, this.radius * 2, 0, 2 * Math.PI);
+        context.fill();
+        context.fillStyle = ColorScheme.Black;
+        context.beginPath();
+        context.arc(this.node.pos.x, this.node.pos.y, this.radius * 2, 0, 2 * Math.PI);
+        context.stroke();
     }
 
     private nodeCreatorDraw() {
@@ -142,7 +150,7 @@ export class PersonWidget {
     private actionNameDraw(context: CanvasRenderingContext2D) {
         this.setTextOption(25, 'italic');
         const widthName = context.measureText(this.action).width;
-        const { isRight, turnedVec, mirroredVec } = this.breakLineDraw(this.cursorPos, widthName);
+        const { isRight, turnedVec, mirroredVec } = this.breakLineDraw(this.cursorPos, widthName, this.radius * 10);
         const infoPosX = isRight ? turnedVec.x + widthName / 2 : mirroredVec.x - widthName / 2;
 
         context.fillStyle = ColorScheme.Black;
@@ -157,11 +165,11 @@ export class PersonWidget {
         context.stroke();
         context.fillStyle = ColorScheme.White;
         context.beginPath();
-        context.arc(this.cursorPos.x, this.cursorPos.y, this.radius * 1.5, 0, 2 * Math.PI);
+        context.arc(this.cursorPos.x, this.cursorPos.y, this.radius * 4, 0, 2 * Math.PI);
         context.fill();
         context.fillStyle = ColorScheme.Black;
         context.beginPath();
-        context.arc(this.cursorPos.x, this.cursorPos.y, this.radius * 1.5, 0, 2 * Math.PI);
+        context.arc(this.cursorPos.x, this.cursorPos.y, this.radius * 4, 0, 2 * Math.PI);
         context.stroke();
     }
 
@@ -169,11 +177,11 @@ export class PersonWidget {
         const context = Canvas.getInstance().getContext();
 
         this.setTextOption(25, 'italic');
-        const widthName = context.measureText(this.node.name).width;
+        const widthName = this.getWidthString(this.node.name);
 
         const pos = this.node.pos;
 
-        const { isRight, turnedVec, mirroredVec } = this.breakLineDraw(pos, widthName);
+        const { isRight, turnedVec, mirroredVec } = this.breakLineDraw(pos, widthName, this.radius * 5);
 
         const infoPosX = isRight ? turnedVec.x + widthName / 2 : mirroredVec.x - widthName / 2;
 
@@ -185,14 +193,14 @@ export class PersonWidget {
 
     }
 
-    private breakLineDraw(pos: Vec2, widthName: number) {
+    private breakLineDraw(pos: Vec2, widthName: number, braekLenght: number, positif: number = -1) {
         const context = Canvas.getInstance().getContext();
         context.fillStyle = ColorScheme.Black;
-        const turnedVec = new Vec2(1, 0).rotateAround(new Vec2(), -Math.PI / 4)
-            .multiplyScalar(this.radius * 4)
+        const turnedVec = new Vec2(1, 0).rotateAround(new Vec2(), positif * Math.PI / 4)
+            .multiplyScalar(braekLenght)
             .add(pos);
         const isRight = turnedVec.x + widthName < document.body.clientWidth;
-        const mirroredVec = turnedVec.clone().rotateAround(pos, -Math.PI / 2);
+        const mirroredVec = turnedVec.clone().rotateAround(pos, positif * Math.PI / 2);
         context.beginPath();
         context.moveTo(pos.x, pos.y);
         isRight ? context.lineTo(turnedVec.x, turnedVec.y) : context.lineTo(mirroredVec.x, mirroredVec.y);
@@ -239,10 +247,25 @@ export class PersonWidget {
 
         this.state = WidgetState.Opened;
         this.node = event.detail;
-        window.dispatchEvent(new TreeLockEvent(true));
     }
 
     private isClicable(v: Vec2): boolean {
-        return this.node.pos.clone().sub(v).length() < this.radius;
+        return this.node.pos.clone().sub(v).length() < this.radius*3;
+    }
+
+    protected clamp(min: number, max: number, v: number) {
+        let res;
+        res = v > max ? max : v;
+        res = v < min ? min : v;
+        return res;
+    }
+
+    protected getWidthString(string: string) {
+        const context = Canvas.getInstance().getContext()
+
+        const width = context.measureText(this.node.name).width;
+        const minWidth = context.measureText('AAAAA').width;
+
+        return this.clamp(minWidth, width, width);
     }
 }

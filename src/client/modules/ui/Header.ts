@@ -35,7 +35,7 @@ export class Header {
         context.textAlign = "center";
         context.textBaseline = "middle"
         context.font = "60px sans-serif";
-        context.fillText(this.title, Canvas.w*50, Canvas.h*10, Canvas.w*100);
+        context.fillText(this.title, Canvas.w*50, this.height*0.45, Canvas.w*100);
         
         const widthString = context.measureText(this.title).width;
         
@@ -51,7 +51,7 @@ export class Header {
         context.textBaseline = "middle"
         context.font = "italic 20px sans-serif";
 
-        context.fillText(this.subTitle, Canvas.w*53, Canvas.h*15, widthString);
+        context.fillText(this.subTitle, Canvas.w*53, this.height*0.68, widthString);
 
     }
 

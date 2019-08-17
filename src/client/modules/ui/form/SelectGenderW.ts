@@ -18,6 +18,7 @@ export class SelectGenderW {
         const h = Canvas.h;
         const w = Canvas.w;
 
+        this.selectedGender = null;
         this.radius = 5;
         this.position = pos;
         this.maleRadioPos = new Vec2(w*17 + this.radius, 0);
@@ -37,7 +38,7 @@ export class SelectGenderW {
     public draw(v: Vec2) {
         if (!this.enable) return;
         const position = this.position.clone().add(v);
-        
+
         this.setupFont();
         this.drawCircle(this.maleRadioPos.clone()
             .add(position), this.selectedGender === Gender.Male);

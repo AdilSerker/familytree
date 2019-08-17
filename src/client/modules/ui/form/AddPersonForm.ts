@@ -22,6 +22,7 @@ export class AddPersonForm {
     private pos: Vec2;
     private genderWidget: SelectGenderW;
     private okButton: Button;
+    private title: { pos: Vec2 };
 
     private action: FromAction;
 
@@ -38,12 +39,14 @@ export class AddPersonForm {
         this.okButton = {
             radius: 20,
             name: 'Ok',
-            pos: new Vec2(w*50, h*85)
+            pos: new Vec2(w * 50, h * 85)
         };
+
+        this.title = { pos: new Vec2(Canvas.w * 50, Canvas.h * 30) };
 
         this.pos = new Vec2();
 
-        this.genderWidget = new SelectGenderW(new Vec2(0, h*50));
+        this.genderWidget = new SelectGenderW(new Vec2(0, h * 50));
         this.genderWidget.enable = false;
 
         this.actionAuthor = {
@@ -86,7 +89,8 @@ export class AddPersonForm {
             document.body.appendChild(this.generateDivInputForm());
         }
         this.genderWidget.enable = this.action === FromAction.AddRelationship ? false : true;
-
+        this.genderWidget.selectedGender = this.action !== FromAction.AddRelationship ?
+            null : this.actionAuthor.gender === Gender.Male ? Gender.Female : Gender.Male;
     }
 
     public removeForm() {
@@ -107,13 +111,16 @@ export class AddPersonForm {
         const nameField = <HTMLInputElement>document.getElementById('name');
         // const dobField = <HTMLInputElement>document.getElementById('dob');
         const pobField = <HTMLInputElement>document.getElementById('pob');
+        const familyField = <HTMLInputElement>document.getElementById('family');
 
         return {
             name: nameField.value,
             gender: this.genderWidget.selectedGender,
             born: pobField.value,
             generation: this.actionAuthor.generation,
-            parentId: this.action === FromAction.AddParent ? null : this.actionAuthor.id
+            familyName: familyField && familyField.value,
+            parentId: this.action === FromAction.AddParent ? null : this.actionAuthor.id,
+            relationship: this.action === FromAction.AddRelationship ? this.actionAuthor.id : null
         };
     }
 
@@ -124,7 +131,7 @@ export class AddPersonForm {
         this.drawOkButton();
         this.drawInputLines();
         this.setupFont(14);
-        this.drawActionInfo(new Vec2(Canvas.w*50, Canvas.h*30));
+        this.drawActionInfo();
         this.genderWidget.draw(this.pos);
     }
 
@@ -142,10 +149,10 @@ export class AddPersonForm {
 
         const h = Canvas.h;
 
-        const namePos = new Vec2(0, h*35).add(this.pos);
-        const dobPos = new Vec2(0, h*55).add(this.pos);
-        const pobPos = new Vec2(0, h*65).add(this.pos);
-        const famPos = new Vec2(0, h*45).add(this.pos);
+        const namePos = new Vec2(0, h * 35).add(this.pos);
+        const dobPos = new Vec2(0, h * 55).add(this.pos);
+        const pobPos = new Vec2(0, h * 65).add(this.pos);
+        const famPos = new Vec2(0, h * 45).add(this.pos);
 
         inputName.style.left = namePos.x + 'px';
         inputName.style.top = namePos.y + 'px';
@@ -157,11 +164,11 @@ export class AddPersonForm {
         inputFamily.style.top = famPos.y + 'px';
     }
 
-    private drawActionInfo(v: Vec2) {
+    private drawActionInfo() {
         if (this.action === FromAction.NewPerson) return;
         const context = Canvas.getInstance().getContext();
 
-        const linePos = v.add(this.pos);
+        const linePos = this.title.pos.clone().add(this.pos);
 
         const title = (this.action === FromAction.AddChild ?
             'Add Child' :
@@ -176,7 +183,6 @@ export class AddPersonForm {
     private onClick(e: InterfaceEvent) {
 
         if (this.state !== WidgetState.Opened || !this.isClicked(e.detail)) return;
-
         try {
             this.validate();
             const inputValues = this.getInputValues();
@@ -197,6 +203,7 @@ export class AddPersonForm {
             this.removeForm();
             this.genderWidget.selectedGender = null;
         } catch (error) {
+
             dispatchEvent(new CustomEvent('error', { detail: error }));
         }
     }
@@ -206,7 +213,7 @@ export class AddPersonForm {
 
         context.fillStyle = color;
 
-        context.fillRect(this.pos.x, this.pos.y, Canvas.w*100, Canvas.h*100);
+        context.fillRect(this.pos.x, this.pos.y, Canvas.w * 100, Canvas.h * 100);
     }
 
     private drawInputLines() {
@@ -219,9 +226,9 @@ export class AddPersonForm {
             const y = Number(inputs[i].style.top.split('px')[0]);
             const heightInput = inputs[i].clientHeight;
 
-            const widthLine = w*80;
-            const linePos = new Vec2(x+w*10, y + heightInput);
-    
+            const widthLine = w * 80;
+            const linePos = new Vec2(x + w * 10, y + heightInput);
+
             context.fillStyle = ColorScheme.Black;
             context.beginPath();
             context.moveTo(linePos.x, linePos.y);
@@ -298,11 +305,11 @@ export class AddPersonForm {
         form.id = 'create_person';
 
         const h = Canvas.h;
-        form.appendChild(this.generateInputText('name', 'Name', new Vec2(0, h*35).add(this.pos)));
+        form.appendChild(this.generateInputText('name', 'Name', new Vec2(0, h * 35).add(this.pos)));
         this.action === FromAction.AddRelationship &&
-            form.appendChild(this.generateInputText('family', 'Family', new Vec2(0, h*45).add(this.pos)));
-        form.appendChild(this.generateInputText('dob', 'Date of Birth', new Vec2(0, h*55).add(this.pos)));
-        form.appendChild(this.generateInputText('pob', 'Place of Birth', new Vec2(0, h*65).add(this.pos)));
+            form.appendChild(this.generateInputText('family', 'Family', new Vec2(0, h * 45).add(this.pos)));
+        form.appendChild(this.generateInputText('dob', 'Date of Birth', new Vec2(0, h * 55).add(this.pos)));
+        form.appendChild(this.generateInputText('pob', 'Place of Birth', new Vec2(0, h * 65).add(this.pos)));
 
         return form;
     }
