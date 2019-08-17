@@ -67,7 +67,7 @@ export class App {
             if (this.cursorPos.equal(this.lastCursorPos)) {
                 window.dispatchEvent(new InterfaceEvent(this.cursorPos));
             }
-            this.lastCursorPos = undefined;
+            this.lastCursorPos = e.touches.length ? this.lastCursorPos : undefined;
         }, false);
 
         window.addEventListener('new-person', this.createNewPerson.bind(this));

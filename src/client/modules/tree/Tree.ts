@@ -57,17 +57,17 @@ export class Tree {
 
     public zoomTouch(touch1: Vec2, touch2: Vec2) {
         if (!this.nodes.length) return;
-        const centerDot = touch2.clone().sub(touch1).divideScalar(2);
+        const centerDot = touch2.clone().sub(touch1).divideScalar(2).add(touch1);
 
         if (!this.zoomCount) { this.zoomCount = touch2.clone().sub(centerDot).length(); }
 
         const delta = touch2.clone().sub(centerDot).length() - this.zoomCount;
-        debug(delta + '');
+        
         if (Math.abs(delta) < 0.1) { 
             this.zoomCount = touch2.clone().sub(centerDot).length();
             return; 
         }
-        if (delta > 0) {
+        if (delta < 0) {
             this.nodes.forEach(item => {
                 const vec = centerDot.clone().sub(item.pos);
                 item.pos.addScaledVector(vec, 0.01);
