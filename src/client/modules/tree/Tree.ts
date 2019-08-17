@@ -62,7 +62,7 @@ export class Tree {
         if (!this.zoomCount) { this.zoomCount = touch2.clone().sub(centerDot).length(); }
 
         const delta = touch2.clone().sub(centerDot).length() - this.zoomCount;
-        
+
         if (Math.abs(delta) < 0.1) { 
             this.zoomCount = touch2.clone().sub(centerDot).length();
             return; 
@@ -70,12 +70,12 @@ export class Tree {
         if (delta < 0) {
             this.nodes.forEach(item => {
                 const vec = centerDot.clone().sub(item.pos);
-                item.pos.addScaledVector(vec, 0.01);
+                item.pos.addScaledVector(vec, 0.02);
             });
         } else {
             this.nodes.forEach(item => {
                 const vec = item.pos.clone().sub(centerDot);
-                item.pos.addScaledVector(vec, 0.01);
+                item.pos.addScaledVector(vec, 0.02);
             });
         }
 
@@ -98,7 +98,9 @@ export class Tree {
         }
     }
 
-    public draw(context: CanvasRenderingContext2D) {
+    public draw() {
+        const context = Canvas.getInstance().getContext()
+
         this.drawConnection(context, this.getFirstGenerationNode());
         this.nodes.forEach(item => item.draw(context));
     }

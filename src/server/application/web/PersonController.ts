@@ -1,4 +1,4 @@
-import { JsonController, Get, Param, Res, Post, Body } from "routing-controllers";
+import { JsonController, Get, Param, Res, Post, Body, QueryParam } from "routing-controllers";
 import { Inject } from "typedi";
 
 import { PersonRepository, FamilyRepository } from "../../infrastructure/repositories";
@@ -6,6 +6,7 @@ import { PersonForm, PersonChildForm, PersonRelationshipForm } from "../../types
 import { Person } from "../../domain/Person";
 import { v4 } from "uuid";
 import { Family } from "../../domain/Family";
+
 
 @JsonController('/api/person')
 export class PersonController {
@@ -22,6 +23,16 @@ export class PersonController {
         const person = await this.personRepository.get({ id });
 
         return person;
+    }
+
+    @Get()
+    public async getPersonList(
+        @QueryParam('ids') ids: string
+    ): Promise<Person[]> {
+        const relationshipIds = ids.split(',');
+        const persons = await this.personRepository.getList({ ids: relationshipIds });
+
+        return persons;
     }
 
     @Post('/')
