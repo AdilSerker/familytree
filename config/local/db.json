@@ -1,0 +1,17 @@
+{
+    "type": "postgres",
+    "host": "127.0.0.1",
+    "database": "db_test",
+    "username": "db_user_test",
+    "password": "dbpasstest",
+    "entities": [
+		"dist/server/infrastructure/models/*.js"
+	],
+    "migrations": [
+        "dist/server/infrastructure/migrations/*.js"
+    ],
+    "logging": ["error"],
+    "cli": {
+        "migrationsDir": "src/server/infrastructure/migrations"
+    }
+}
