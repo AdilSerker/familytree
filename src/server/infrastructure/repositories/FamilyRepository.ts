@@ -11,7 +11,9 @@ export class FamilyRepository {
     private familyFactory: FamilyFactory;
 
     public async get(id: string): Promise<Family> {
-        const model = await getRepository(FamilyModel).findOne(id);
+        const model = await getRepository(FamilyModel).findOne({
+            where: { id }
+        });
         if (!model) {
             throw new Error("family not found");
         }

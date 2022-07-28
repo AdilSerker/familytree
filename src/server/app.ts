@@ -16,6 +16,8 @@ import { middlewares } from "./components/middlewares";
 const dbConfig = <PostgresConnectionOptions>Config.getInstance().getConfig(ConfigType.Db);
 const serverConfig = <ServerConfig>Config.getInstance().getConfig(ConfigType.Server);
 
+serverConfig.port = +process.env.PORT || serverConfig.port;
+
 const PUBLIC_PATH = path.join(__dirname, '../../public');
 const INDEX_HTML_PATH = path.join(PUBLIC_PATH, 'index.html');
 const API_BASIC_URL = '/api';
